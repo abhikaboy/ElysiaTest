@@ -44,7 +44,13 @@
             echo Entering Elysia DEMO | lolcat
             echo "Welcome to the development environment for this project!"
             PATH=$PWD/scripts:$PATH
-          '';
+            echo "=================================================="
+            echo "Scripts    Description" | awk 'BEGIN { FS=" "; OFS="\t" } { print $1, $2 }'
+            echo "=================================================="
+            echo "start-backend+Starts the backend server" | awk 'BEGIN { FS="+"; OFS="\t" } { print $1, $2 }'
+            echo "backend-lint+Lints & Formats the backend" | awk 'BEGIN { FS="+"; OFS="\t" } { print $1, $2 }'
+            echo "=================================================="         
+            '';
 
 
         };
