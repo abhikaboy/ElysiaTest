@@ -1,52 +1,54 @@
 {
-  description = "bun development environment";
+  description = "Example JavaScript development environment for Zero to Nix";
 
+  # Flake inputs
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0.2405.*.tar.gz";
   };
 
-  outputs = {
-    self,
-    nixpkgs,
-  }: let
-    supportedSystems = ["aarch64-linux" "aarch64-darwin"]; // add your system
-    forEachSupportedSystem = f:
-      nixpkgs.lib.genAttrs supportedSystems (system:
-        f {
-          pkgs = import nixpkgs {inherit system;};
-        });
-  in {
-    devShells = forEachSupportedSystem ({pkgs}: {
-      default = pkgs.mkShell {
-        packages = with pkgs; [
-          automake
-          ccache
-          coreutils-full
-          gnused
-          go
-          libiconv
-          libtool
-          ninja
-          pkg-config
-          ruby
-          rustc
-          cargo
-          bun
-          llvmPackages_16.lldb
-          llvmPackages_16.libstdcxxClang
-          llvmPackages_16.libllvm
-          llvmPackages_16.libcxx
-          lld_16
-          clang-tools
-          clang_16
-          autoconf
-        ];
+  # Flake outputs
+  outputs = { self, nixpkgs }:
+    let
+      # Systems supported
+      allSystems = [
+        "x86_64-linux" # 64-bit Intel/AMD Linux
+        "aarch64-linux" # 64-bit ARM Linux
+        "x86_64-darwin" # 64-bit Intel macOS
+        "aarch64-darwin" # 64-bit ARM macOS
+      ];
 
-        shellHook = ''
-             export CC="${pkgs.llvmPackages_16.libstdcxxClang}/bin/clang"
-             export CXX="${pkgs.llvmPackages_16.libstdcxxClang}/bin/clang++"
-        '';
-      };
-    });
-  };
+      # Helper to provide system-specific attributes
+      forAllSystems = f: nixpkgs.lib.genAttrs allSystems (system: f {
+        pkgs = import nixpkgs { inherit system; };
+      });
+    in
+    {
+      # Development environment output
+      devShells = forAllSystems ({ pkgs }: {
+        default = pkgs.mkShell {
+
+          # The Nix packages provided in the environment
+          packages = with pkgs; [
+            lolcat
+            bun
+            git
+            curl
+            nodePackages.prettier
+            nodePackages.eslint
+          ];
+
+          PROJECT_ROOT = builtins.toString ./.;
+
+          shellHook = ''
+            clear
+            echo Entering Elysia DEMO | lolcat
+            echo "Welcome to the development environment for this project!"
+            PATH=$PWD/scripts:$PATH
+          '';
+
+
+        };
+      });
+    };
 }
+
